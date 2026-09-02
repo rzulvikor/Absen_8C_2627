@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   BarChart3,
   CalendarDays,
@@ -32,16 +32,47 @@ const NAV: { id: PageId; label: string; icon: typeof Orbit; kicker: string; head
 ];
 
 function Shell() {
-  const { students, records } = useStore();
+  const { students, records, settings, pullRemote, toast } = useStore();
   const [page, setPage] = useState<PageId>("dashboard");
   const [compact, setCompact] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [now, setNow] = useState(() => new Date());
+  const lastSyncErr = useRef(0);
 
   useEffect(() => {
     const t = window.setInterval(() => setNow(new Date()), 30_000);
     return () => window.clearInterval(t);
   }, []);
+
+  /* ===== Auto-sync: tarik pembaruan dari Google Sheets secara berkala ===== */
+  useEffect(() => {
+    if (!settings.autoSync || !settings.sheetUrl) return;
+    let cancelled = false;
+    const run = async () => {
+      const r = await pullRemote();
+      if (cancelled) return;
+      if (r.ok) {
+        if (r.imported > 0 || r.newStudents > 0) {
+          toast(
+            `Auto-sync: ${r.newStudents} siswa baru & ${r.imported} catatan diperbarui dari Spreadsheet.`,
+            "info"
+          );
+        }
+      } else {
+        const t = Date.now();
+        if (t - lastSyncErr.current > 120_000) {
+          lastSyncErr.current = t;
+          toast(`Auto-sync gagal: ${r.error}`, "error");
+        }
+      }
+    };
+    run();
+    const iv = window.setInterval(run, Math.max(10, settings.syncInterval) * 1000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(iv);
+    };
+  }, [settings.autoSync, settings.sheetUrl, settings.syncInterval, pullRemote, toast]);
 
   const active = NAV.find((n) => n.id === page)!;
 
@@ -147,6 +178,15 @@ function Shell() {
             </div>
           </div>
           <div className="flex items-center gap-3">
+            {settings.autoSync && settings.sheetUrl && (
+              <span
+                className="hidden md:flex items-center gap-1.5 rounded-full border border-lime-300/40 bg-lime-300/10 px-2.5 py-1 font-mono text-[9px] text-lime-300 tracking-[0.14em]"
+                title={`Auto-sync aktif — memeriksa Spreadsheet setiap ${settings.syncInterval} detik`}
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-lime-300 pulse-dot" />
+                AUTO-SYNC · {settings.syncInterval}D
+              </span>
+            )}
             <div className="hidden sm:block text-right">
               <p className="m-0 text-xs font-semibold">SMP Negeri 61</p>
               <p className="m-0 text-[10px] text-slate-400 font-mono">

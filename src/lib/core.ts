@@ -22,7 +22,18 @@ export interface AttendanceRecord {
 export interface Settings {
   sheetUrl: string;
   lastBackup: string | null;
+  autoSync: boolean;
+  syncInterval: number;
+  lastSync: string | null;
 }
+
+export const DEFAULT_SETTINGS: Settings = {
+  sheetUrl: "",
+  lastBackup: null,
+  autoSync: false,
+  syncInterval: 30,
+  lastSync: null,
+};
 
 export interface Selection {
   status: Status;

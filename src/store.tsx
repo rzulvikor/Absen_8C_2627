@@ -15,6 +15,7 @@ import {
   type Settings,
   type Status,
   type Student,
+  DEFAULT_SETTINGS,
   monthOf,
   seedStudents,
   STORAGE_KEY,
@@ -44,7 +45,7 @@ function loadPersisted(): Persisted {
         return {
           students: p.students,
           records: p.records,
-          settings: p.settings || { sheetUrl: "", lastBackup: null },
+          settings: { ...DEFAULT_SETTINGS, ...(p.settings || {}) },
         };
       }
     }
@@ -54,7 +55,7 @@ function loadPersisted(): Persisted {
   return {
     students: seedStudents(),
     records: [],
-    settings: { sheetUrl: "", lastBackup: null },
+    settings: { ...DEFAULT_SETTINGS },
   };
 }
 
@@ -87,6 +88,10 @@ interface StoreValue {
     students?: { nis: string; name: string }[];
     records?: { nis: string; name: string; date: string; status: string; note?: string; time?: string }[];
   }) => { imported: number; skipped: number; newStudents: number };
+  /** Tarik data dari Google Sheets (GET) lalu gabungkan ke data lokal. */
+  pullRemote: (urlOverride?: string) => Promise<
+    { ok: true; imported: number; skipped: number; newStudents: number } | { ok: false; error: string }
+  >;
 
   exportJSON: () => string;
   importJSON: (text: string) => string | null;
@@ -336,12 +341,32 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         }
       });
 
-      setStudents(studentList);
-      setRecords(nextRecords);
+      /* Jangan sentuh state bila tidak ada perubahan — hindari render & polling berulang. */
+      if (newStudents > 0 || imported > 0) {
+        setStudents(studentList);
+        setRecords(nextRecords);
+      }
       return { imported, skipped, newStudents };
     },
     [students, records]
   );
+
+  const pullRemote = useCallback(
+    async (urlOverride?: string) => {
+      const url = ((urlOverride ?? settings.sheetUrl) || "").trim();
+      if (!url) return { ok: false as const, error: "URL Web App belum diisi." };
+    try {
+      const res = await fetch(url, { method: "GET" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = (await res.json()) as Parameters<typeof restoreFromRemote>[0];
+      if (!data || typeof data !== "object") throw new Error("Respons tidak valid.");
+      const r = restoreFromRemote(data);
+      setSettings({ lastSync: new Date().toISOString() });
+      return { ok: true as const, ...r };
+    } catch (e) {
+      return { ok: false as const, error: e instanceof Error ? e.message : "Gagal terhubung ke Sheets." };
+    }
+  }, [settings.sheetUrl, restoreFromRemote, setSettings]);
 
   const exportJSON = useCallback(
     () =>
@@ -394,6 +419,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     importStudents,
     setSettings,
     restoreFromRemote,
+    pullRemote,
     exportJSON,
     importJSON,
   };
