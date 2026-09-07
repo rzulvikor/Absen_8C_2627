@@ -1,0 +1,197 @@
+@import "tailwindcss";
+
+@theme {
+  --color-navy: #071426;
+  --color-abyss: #06101f;
+  --color-panel: #0e233d;
+  --color-cyan-neon: #2de2e6;
+  --color-lime-neon: #b6f23d;
+  --color-pink-neon: #ff4fa3;
+  --color-blue-neon: #3f8cff;
+  --color-orange-neon: #ffb547;
+  --font-display: "Bricolage Grotesque", "DM Sans", sans-serif;
+  --font-body: "DM Sans", sans-serif;
+  --font-mono: "Space Mono", monospace;
+}
+
+:root {
+  --navy: #071426;
+  --cyan: #2de2e6;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scrollbar-color: rgba(45, 226, 230, 0.5) #0a1b31;
+}
+
+body {
+  margin: 0;
+  background: var(--navy);
+  color: #e9f8ff;
+  font-family: "DM Sans", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: rgba(45, 226, 230, 0.35);
+  color: #eaffff;
+}
+
+/* ---------- ambient layered background ---------- */
+.app-shell {
+  background:
+    radial-gradient(circle at 85% -5%, rgba(45, 226, 230, 0.14), transparent 28%),
+    radial-gradient(circle at 8% 108%, rgba(63, 140, 255, 0.16), transparent 32%),
+    radial-gradient(circle at 60% 55%, rgba(255, 79, 163, 0.05), transparent 40%),
+    #071426;
+}
+
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(45, 226, 230, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(45, 226, 230, 0.04) 1px, transparent 1px);
+  background-size: 36px 36px;
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.4) 60%, transparent 100%);
+}
+
+.orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(90px);
+  pointer-events: none;
+  animation: drift 16s ease-in-out infinite alternate;
+}
+
+@keyframes drift {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to { transform: translate3d(40px, -30px, 0) scale(1.12); }
+}
+
+/* ---------- glass surfaces ---------- */
+.glass {
+  background: rgba(14, 35, 61, 0.66);
+  border: 1px solid rgba(126, 226, 255, 0.14);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(18px);
+}
+
+.glass-soft {
+  background: rgba(14, 35, 61, 0.4);
+  border: 1px solid rgba(126, 226, 255, 0.1);
+}
+
+/* ---------- motion ---------- */
+@keyframes rise {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes pop {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes pulse-dot {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(182, 242, 61, 0.55); }
+  55% { box-shadow: 0 0 0 7px rgba(182, 242, 61, 0); }
+}
+
+@keyframes bar-grow {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@keyframes col-grow {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(14px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+
+.anim-rise { animation: rise 0.4s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.anim-pop { animation: pop 0.25s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.anim-toast { animation: toast-in 0.3s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.pulse-dot { animation: pulse-dot 2.2s ease-out infinite; }
+.bar-grow { transform-origin: left; animation: bar-grow 0.9s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.col-grow { transform-origin: bottom; animation: col-grow 0.8s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* ---------- nav ---------- */
+.nav-item {
+  color: #9bb7cb;
+  transition: color 0.2s, background 0.2s, box-shadow 0.2s, transform 0.2s;
+  position: relative;
+}
+.nav-item:hover { background: rgba(45, 226, 230, 0.08); color: #dffcff; }
+.nav-item.active {
+  background: linear-gradient(90deg, rgba(45, 226, 230, 0.16), rgba(45, 226, 230, 0.03));
+  color: var(--cyan);
+  box-shadow: inset 3px 0 0 var(--cyan);
+}
+
+/* ---------- status buttons ---------- */
+.status-btn {
+  border: 1px solid rgba(176, 211, 232, 0.18);
+  color: #a9c2d3;
+  transition: transform 0.16s, border-color 0.2s, background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+.status-btn:hover { transform: translateY(-1px); border-color: rgba(45, 226, 230, 0.6); color: #fff; }
+.status-btn:active { transform: translateY(0) scale(0.97); }
+.status-btn.selected[data-status="Hadir"] { background: rgba(182, 242, 61, 0.16); border-color: #b6f23d; color: #b6f23d; box-shadow: 0 0 18px rgba(182, 242, 61, 0.14); }
+.status-btn.selected[data-status="Sakit"] { background: rgba(255, 181, 71, 0.15); border-color: #ffb547; color: #ffb547; box-shadow: 0 0 18px rgba(255, 181, 71, 0.12); }
+.status-btn.selected[data-status="Izin"] { background: rgba(63, 140, 255, 0.16); border-color: #3f8cff; color: #8bb8ff; box-shadow: 0 0 18px rgba(63, 140, 255, 0.14); }
+.status-btn.selected[data-status="Tanpa Keterangan"] { background: rgba(255, 79, 163, 0.14); border-color: #ff4fa3; color: #ff4fa3; box-shadow: 0 0 18px rgba(255, 79, 163, 0.14); }
+
+/* ---------- calendar ---------- */
+.cal-day { transition: background 0.16s, color 0.16s, transform 0.16s; }
+.cal-day:hover { background: rgba(45, 226, 230, 0.16); color: var(--cyan); transform: scale(1.08); }
+.cal-day.today { outline: 1px solid var(--cyan); color: var(--cyan); }
+.cal-day.chosen { background: var(--cyan); color: var(--navy); font-weight: 700; }
+
+/* ---------- scrollbars ---------- */
+.table-wrap { scrollbar-color: rgba(45, 226, 230, 0.7) #0a1b31; }
+.table-wrap::-webkit-scrollbar { height: 8px; width: 8px; }
+.table-wrap::-webkit-scrollbar-thumb { background: rgba(45, 226, 230, 0.7); border-radius: 10px; }
+.table-wrap::-webkit-scrollbar-track { background: #0a1b31; border-radius: 10px; }
+
+.th-mono {
+  color: #82a5bd;
+  font-family: "Space Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ---------- inputs ---------- */
+.input-dark {
+  background: #06101f;
+  border: 1px solid rgba(126, 226, 255, 0.18);
+  color: #d9f6ff;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.input-dark:focus {
+  outline: none;
+  border-color: #2de2e6;
+  box-shadow: 0 0 0 3px rgba(45, 226, 230, 0.15);
+}
+.input-dark::placeholder { color: #4c6a80; }
+input[type="date"].input-dark::-webkit-calendar-picker-indicator,
+input[type="month"].input-dark::-webkit-calendar-picker-indicator {
+  filter: invert(0.8) sepia(1) saturate(4) hue-rotate(140deg);
+  cursor: pointer;
+}
+
+code.gs-block {
+  font-family: "Space Mono", monospace;
+  font-size: 11px;
+  line-height: 1.65;
+  color: #a8e6f0;
+}
+code.gs-block .gs-kw { color: #ff9ecb; }
+code.gs-block .gs-str { color: #b6f23d; }
+code.gs-block .gs-com { color: #4c6a80; font-style: italic; }
